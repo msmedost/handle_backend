@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 
 const Registration = () => {
   const [formData, setFormData] = useState({
     ourServiceCity: "Dummy City",
     zone: "Dummy Zone",
     toliChapter: "Dummy Chapter",
-    yourReferenceNumber: "Dummy Your Ref Number",
+    yourReferenceNumber: "93311775951",
     emailAddress: "dummy@example.com",
     fullName: "John Doe",
     phoneNumber: "1234567890",
@@ -44,33 +45,81 @@ const Registration = () => {
     userPhoto: "https://dummyimage.com/300x300",
     companyLogo: "https://dummyimage.com/200x200",
   });
+  const [userPhoto, setUserPhoto] = useState(null);
+  const [companyLogo, setCompanyLogo] = useState(null);
+
+  const handleUserPhotoChange = (event) => {
+    setUserPhoto(event.currentTarget.files[0]);
+  };
+
+  const handleCompanyLogoChange = (event) => {
+    setCompanyLogo(event.currentTarget.files[0]);
+  };
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // Basic validation example
-      if (!formData.fullName || !formData.emailAddress) {
-        console.error("Please fill in all required fields.");
-        return;
-      }
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     // Basic validation example
+  //     if (!formData.fullName || !formData.emailAddress) {
+  //       console.error("Please fill in all required fields.");
+  //       return;
+  //     }
   
-      const response = await axios.post(
-        "http://localhost:8000/api/register",
-        formData
-      );
-      console.log(response.data);
-    } catch (error) {
-      console.error("Registration Error:", error);
-      if (error.response && error.response.data) {
-        console.error("Error Message:", error.response.data.message);
+  //     const response = await axios.post(
+  //       "http://localhost:8000/api/register",
+  //       formData
+  //     );
+  //     console.log(response.data);
+  //   } catch (error) {
+  //     console.error("Registration Error:", error);
+  //     if (error.response && error.response.data) {
+  //       console.error("Error Message:", error.response.data.message);
+  //     }
+  //   }
+  // };
+
+  const onSubmit = async (values, { setSubmitting }) => {
+    try {
+      const formData = new FormData();
+      formData.append('fullName', values.fullName);
+      formData.append('emailAddress', values.emailAddress);
+      formData.append('phoneNumber', values.phoneNumber);
+      formData.append('city', values.city);
+      formData.append('postalPinCode', values.postalPinCode);
+      formData.append('organizationName', values.organizationName);
+      formData.append('businessCategory', values.businessCategory);
+      formData.append('businessDescription', values.businessDescription);
+      formData.append('officeAddress', values.officeAddress);
+      formData.append('userPhoto', userPhoto);
+      if (companyLogo) {
+        formData.append('companyLogo', companyLogo);
       }
+
+      const response = await axios.post('/api/register', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      alert(response.data.message);
+      // Optionally reset form values
+      // resetForm();
+    } catch (error) {
+      console.error('Registration Error:', error.message);
+      alert('Registration failed. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  
+  
   
 
   return (
@@ -342,7 +391,8 @@ const Registration = () => {
         onChange={handleChange}
       />
 
-      
+      <input type="file" id="" name="userPhoto" />
+      <input type="file" id="" name="companyLogo" />
 
       <button type="submit">Register</button>
     </form>
